@@ -1,0 +1,46 @@
+module passenger 1.0;
+
+require {
+	type httpd_tmp_t;
+	type postgresql_port_t;
+	type sshd_t;
+	type user_home_dir_t;
+	type anon_inodefs_t;
+	type nrpe_t;
+	type httpd_t;
+	type user_home_t;
+	class capability { fowner sys_resource fsetid };
+	class tcp_socket name_connect;
+	class dir { write getattr search remove_name create add_name };
+	class file { execute read create getattr write ioctl unlink open };
+}
+
+#============= httpd_t ==============
+allow httpd_t anon_inodefs_t:file write;
+
+#!!!! This avc can be allowed using the boolean 'httpd_tmp_exec'
+allow httpd_t httpd_tmp_t:file execute;
+allow httpd_t nrpe_t:dir search;
+allow httpd_t nrpe_t:file { read open };
+
+#!!!! This avc can be allowed using one of the these booleans:
+#     httpd_can_network_connect, httpd_can_network_connect_db
+allow httpd_t postgresql_port_t:tcp_socket name_connect;
+
+#!!!! This avc can be allowed using one of the these booleans:
+#     httpd_run_stickshift, httpd_setrlimit
+allow httpd_t self:capability { fowner sys_resource fsetid };
+allow httpd_t sshd_t:dir { getattr search };
+allow httpd_t sshd_t:file { read open };
+#!!!! The source type 'httpd_t' can write to a 'dir' of the following types:
+# httpd_tmp_t, dirsrv_config_t, dirsrvadmin_tmp_t, httpd_squirrelmail_t, httpd_cache_t, httpd_tmpfs_t, dirsrv_var_run_t, httpd_var_lib_t, httpd_var_run_t, dirsrv_var_log_t, zarafa_var_lib_t, squirrelmail_spool_t, dirsrvadmin_config_t, httpd_awstats_rw_content_t, httpd_cobbler_rw_content_t, httpd_munin_rw_content_t, httpd_bugzilla_rw_content_t, passenger_tmp_t, cluster_conf_t, httpd_cvs_rw_content_t, httpd_git_rw_content_t, httpd_sys_rw_content_t, httpd_sys_rw_content_t, httpd_apcupsd_cgi_rw_content_t, httpd_nagios_rw_content_t, httpd_nutups_cgi_rw_content_t, httpd_dspam_rw_content_t, httpd_prewikka_rw_content_t, httpd_mediawiki_rw_content_t, httpd_squid_rw_content_t, passenger_var_run_t, httpd_smokeping_cgi_rw_content_t, httpd_w3c_validator_rw_content_t, httpd_openshift_rw_content_t, httpd_dirsrvadmin_rw_content_t, httpd_collectd_rw_content_t, httpd_user_rw_content_t, httpdcontent
+
+allow httpd_t user_home_dir_t:dir { write remove_name create add_name };
+#!!!! The source type 'httpd_t' can write to a 'file' of the following type:
+# httpdcontent
+
+allow httpd_t user_home_dir_t:file { execute read create ioctl write getattr unlink open };
+
+#!!!! This avc can be allowed using one of the these booleans:
+#     httpd_read_user_content, httpd_enable_homedirs
+allow httpd_t user_home_t:file { read open };
