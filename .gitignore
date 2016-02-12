@@ -1,2 +1,6 @@
 # Ignore gedit backup files
 *~
+
+# Ignore compuled moduled
+*.mod
+*.pp
